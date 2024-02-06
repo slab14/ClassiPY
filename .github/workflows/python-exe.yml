@@ -1,0 +1,55 @@
+name: Build exe
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Python
+        uses: actions/setup-python@v5
+	with:
+	  python-version: "3.10"
+      - name: Install requirements
+        run: |
+	  wget https://imagemagick.org/archive/binaries/ImageMagick-7.1.1-27-portable-Q8-x64.zip -O C:\
+	  unzip C:\ImageMagick-7.1.1-27-portable-Q8-x64.zip
+	  python -m pip install --upgrade pip
+	  pip install -r requirements.txt
+      - name: Run PyInstaller
+        run: |
+	  python -m PyInstaller --onefile --noconsole --name "classiPY" ${{ github.workspace }}/src/classiPY.py
+      - uses: actions/upload-artifact@v3
+        with:
+	  name: classiPY
+	  path: dist/classiPY.exe
+      - name: create release
+        id: create_release
+	uses: actions/create-release@v1
+	env:
+	  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+	with:
+	  tag_name: ${{ github.event.head_commit.message }}
+	  release_name: ${{ github.event.head_commit.message }}
+	  overwrite: true
+	  body: |
+	    Test Release v0.0.1
+	  draft: false
+	  prerelease: false
+      - name: Upload Release Asset
+        id: upload-release-asset
+	uses: actions/upload-release-asset@v1
+	env:
+	  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+	with:
+	  upload_url: ${{ steps.create_release.output.upload_url }}
+	  asset_path: dist/classiPY.exe
+	  asset_name: classiPY.exe
+	  asset_content_type: application/zip
