@@ -13,12 +13,11 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5
 	with:
-	  python-version: "3.10"
+	  python-version: "3.11"
       - name: Install dependencies
         run: |
 	  wget https://imagemagick.org/archive/binaries/ImageMagick-7.1.1-27-portable-Q8-x64.zip -O C:\
