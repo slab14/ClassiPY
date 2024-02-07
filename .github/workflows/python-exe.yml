@@ -1,4 +1,4 @@
-1;95;0c1#This workflow will install Python dependencies (including ImageMagic), then create an executable of the python script
+#This workflow will install Python dependencies (including ImageMagic), then create an executable of the python script
 
 name: Build exe
 
