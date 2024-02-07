@@ -1,4 +1,4 @@
-#This workflow will install Python dependencies (including ImageMagic), then create an executable of the python script
+1;95;0c1#This workflow will install Python dependencies (including ImageMagic), then create an executable of the python script
 
 name: Build exe
 
@@ -38,8 +38,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${GITHUB_SHA}
-          release_name: Release ${GITHUB_SHA}
+          tag_name: ${LAST_COMMIT__SHA:0:7}
+          release_name: Release ${LAST_COMMIT_SHA:0:7}
           body: |
             Test Release v0.0.1
           draft: false
