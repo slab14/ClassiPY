@@ -24,7 +24,7 @@ jobs:
           unzip C:\ImageMagick-7.1.1-27-portable-Q8-x64.zip
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-	  pip install PyInstaller
+          pip install PyInstaller
       - name: Run PyInstaller
         run: |
           python -m PyInstaller --onefile --noconsole --name "classiPY" ${{ github.workspace }}/src/classiPY.py
