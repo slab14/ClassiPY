@@ -29,7 +29,7 @@ jobs:
           python -m PyInstaller --onefile --noconsole --name "classiPY" ${{ github.workspace }}/src/classiPY.py
       - uses: actions/upload-artifact@v3
         with:
-	  name: classiPY
+          name: classiPY
           path: dist/classiPY.exe
       - name: create release
         id: create_release
