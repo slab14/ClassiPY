@@ -38,8 +38,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ env.VERSION}}
-          release_name: Release ${{env.RELEASE_STRING}}
+          tag_name: ${LAST_COMMIT_SHA:0:7}
+          release_name: Release ${LAST_COMMIT_SHA:0:7}
           body: |
             Test Release v0.0.1
           draft: false
