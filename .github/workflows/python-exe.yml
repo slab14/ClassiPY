@@ -38,8 +38,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${LAST_COMMIT_SHA:0:7}
-          release_name: Release ${LAST_COMMIT_SHA:0:7}
+          echo "SHA=$("${{ github.sha }}".SubString(0, 8))" >> $env:GITHUB_ENV
+          tag_name: ${{ env.SHA }}
+          release_name: Release ${{ env.SHA }}
           body: |
             Test Release v0.0.1
           draft: false
