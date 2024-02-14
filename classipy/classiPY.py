@@ -12,23 +12,21 @@ logging.basicConfig(
 
 BANNER_PERCENT_OF_HEIGHT = 5  # Adjust the percentage as needed
 FONT_PERCENT_OF_BANNER = 50  # Adjust the font size percentage as needed
-FONT_SIZE = 25
-BAR_HEIGHT = 40
 EXTS = (".jpg", ".png", ".jpeg", ".bmp")  # file extensions to look for
 MARKS = ("CUI", "S", "U")
-FONT = Path(__file__).parent / ".." / "font" / "ARIALBD.TTF"
+FONT = Path(__file__).parents[1] / "font" / "ARIALBD.TTF"
 
 
 class Markings:
     """Class to define marking options. Options: Unclass, CUI, & Secret"""
-    def __init__(self, classifications=MARKS):
+    def __init__(self, classifications: str=MARKS) -> str:
         self.classifications = classifications
 
-    def get_symbol(self, classification):
+    def get_symbol(self, classification: str) -> str:
         """Return short-hand symbol for classification"""
         return classification
 
-    def get_long_name(self, classification):
+    def get_long_name(self, classification: str) -> str:
         """Return full name of classification level"""
         out = None
         if classification == "CUI":
@@ -39,7 +37,7 @@ class Markings:
             out = "UNCLASSIFIED"
         return out
 
-    def get_color(self, classification):
+    def get_color(self, classification: str) -> str:
         """Return color for banner matching classification level"""
         out = None
         if classification == "CUI":
@@ -58,38 +56,27 @@ def draw_overlay(
         draw: ImageDraw.ImageDraw, width: int, height: int,
         classification: str='CUI'
 ) -> None:
-    #font = ImageFont.truetype(str(FONT), FONT_SIZE)
-    #banner_height = int(height * (BANNER_PERCENT_OF_HEIGHT / 100))
-    banner_height = BAR_HEIGHT
-    draw.rectangle(
-        [0, 0, width, banner_height],
-        fill=markings.get_color(classification)
+    """Add overlay banner with classification markings."""
+    banner_height = int(height * (BANNER_PERCENT_OF_HEIGHT / 100))
+    font = ImageFont.truetype(
+        str(FONT), int(banner_height * (FONT_PERCENT_OF_BANNER / 100))
     )
-    draw.rectangle(
-        [0, height-banner_height, width, height],
-        fill=markings.get_color(classification)
-    )
-    text_bbox = draw.textbbox(
-        (0, 0), markings.get_long_name(classification)
-    )
-    text_horizontal = width - (text_bbox[2] - text_bbox[0]) // 2
-    text_vertical = banner_height - (text_bbox[3] + text_bbox[1]) // 2
+    color = markings.get_color(classification)
+    bottom_offset = height - banner_height
+    draw.rectangle([0, 0, width, banner_height],fill=color)
+    draw.rectangle([0, bottom_offset, width, height], fill=color)
+    text = markings.get_long_name(classification)
+    text_bbox = draw.textbbox((0, 0), text, font=font)
+    text_horizontal = (width - (text_bbox[2] - text_bbox[0])) // 2
+    text_vertical = (banner_height - (text_bbox[3] + text_bbox[1])) // 2
     text_position_top = (text_horizontal, text_vertical)
-    text_position_bottom = (
-        text_horizontal,
-        height - banner_height + text_vertical
-    )
-    draw.text(
-        text_position_top, markings.get_long_name(classification),
-        fill=(255, 255, 255)
-    )
-    draw.text(
-        text_position_bottom, markings.get_long_name(classification),
-        fill=(255, 255, 255)
-    )    
+    text_position_bottom = (text_horizontal, bottom_offset + text_vertical)
+    draw.text(text_position_top, text, font=font, fill=(255, 255, 255))
+    draw.text(text_position_bottom, text, font=font, fill=(255, 255, 255))    
 
 
 def add_border(img: Image.Image, border_thickness: int=5) -> Image.Image:
+    """Add black border around image"""
     width, height = img.size
     bordered_img = Image.new(
         "RGB",
@@ -104,6 +91,8 @@ def save_image_with_overlay(
         image_path: Path, new_path: Path,
         classification: str, border_thickness: int=5
 ) -> None:
+    """Take input image, add overlay with classification, and black border.
+    Save image with classification level in file name"""
     try:
         img = Image.open(image_path)
         width, height = img.size
@@ -125,6 +114,7 @@ def save_image_with_overlay(
 def add_overlay_to_dir(
         directory_path: Path, output_path: Path,
         classification: str='CUI') -> None:
+    """Iterate through all supported image files in a director"""
     if not Path(output_path).exists():
         output_path.mkdir(parents=True, exist_ok=True)
     image_files = [
