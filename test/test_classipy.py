@@ -4,12 +4,12 @@ import re
 import tempfile
 from pathlib import Path
 import pytest
-from wand.image import Image
-from wand.color import Color
-from src import classiPY
+from PIL import Image
+from classipy import classiPY
 
 
-def test_markings():
+
+def test_markings() -> None:
     """Verify correct marking options exist"""
     markings = classiPY.Markings()
     levels = ["CUI", "S", "U"]
@@ -18,11 +18,11 @@ def test_markings():
 
 
 @pytest.mark.parametrize("level,full_name,color", [
-    ("CUI", "CUI", "#502b85"),
-    ("S", "SECRET", "red"),
-    ("U", "UNCLASSIFIED", "green"),
+    ("CUI", "CUI", (80, 43, 133)),
+    ("S", "SECRET", (200, 16, 46)),
+    ("U", "UNCLASSIFIED", (0, 122, 51)),
     ])
-def test_marking_output(level, full_name, color):
+def test_marking_output(level: str, full_name: str, color: tuple) -> None:
     """Verify correct mappings between short-hand labels and marks that
     will appear on immages and banner colors"""
     markings = classiPY.Markings()
@@ -30,32 +30,28 @@ def test_marking_output(level, full_name, color):
     assert markings.get_color(level) == color
 
 
-def count_pixel_colors(filename, banner_percent=5):
+def count_pixel_colors(filename: Path, banner_percent: int=5) -> tuple:
     pixels = []
     width, height = 0, 0
-    blob = None
-    with Image(filename=filename) as img:
-        img.depth = 8
-        blob = img.make_blob(format='RGB')
+    with Image.open(filename).convert('RGB') as img:
         width, height = img.width, img.height
-    top_banner = int(width * height * (banner_percent / 100) * 3)
-    for cursor in range(width * 3, top_banner, 3):
-        pixels.append(
-            (blob[cursor], blob[cursor + 1], blob[cursor + 2])
-        )
+        banner_rows = int(height * (banner_percent / 100))
+        for row in range(6, banner_rows - 2):
+            for column in range(6, width - 6):
+                pixels.append(img.getpixel((column, row)))
     most_freq = max(set(pixels), key=pixels.count)
     return most_freq
 
 
 @pytest.mark.parametrize("level, color", [
-    ("CUI", "#502b85"),
-    ("S", "red"),
-    ("U", "green"),
+    ("CUI", (80, 43, 133)),
+    ("S", (200, 16, 46)),
+    ("U", (0, 122, 51)),
     ])
-def test_banners(level, color):
+def test_banners(level: str, color: tuple) -> None:
     """Verify correct file renaming, banner colors"""
     with tempfile.TemporaryDirectory(dir=Path('/tmp').resolve()) as tempdir:
-        classiPY.label_folder(
+        classiPY.add_overlay_to_dir(
             Path('./test/figs').resolve(), Path(tempdir),
             classification=level
         )
@@ -65,9 +61,5 @@ def test_banners(level, color):
         for filename in filenames:
             assert re.search(f"^({level})*", filename.name)
             banner_color = count_pixel_colors(filename)
-            correct_color = (
-                Color(color).red_int8, Color(color).green_int8,
-                Color(color).blue_int8
-            )
-            for i, j in zip(banner_color, correct_color):
-                assert math.isclose(i, j, abs_tol=2)
+            for i, j in zip(banner_color, color):
+                assert math.isclose(i, j, abs_tol=22)

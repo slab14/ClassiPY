@@ -20,15 +20,13 @@ jobs:
           python-version: "3.11"
       - name: Install dependencies
         run: |
-          (new-object System.Net.WebClient).DownloadFile('https://imagemagick.org/archive/binaries/ImageMagick-7.1.1-27-portable-Q8-x64.zip', 'C:\ImageMagick-7.1.1-27-portable-Q8-x64.zip')
-          unzip C:\ImageMagick-7.1.1-27-portable-Q8-x64.zip
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install PyInstaller
           echo "SHORT_SHA=$('${{ github.sha }}'.SubString(0, 8))" >> $env:GITHUB_ENV	  
       - name: Run PyInstaller
         run: |
-          python -m PyInstaller --onefile --noconsole --name "classiPY" ${{ github.workspace }}/src/classiPY.py
+          python -m PyInstaller --onefile --noconsole --name "classiPY" ${{ github.workspace }}/classipy/classiPY.py
       - uses: actions/upload-artifact@v3
         with:
           name: classiPY
